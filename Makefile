@@ -53,22 +53,10 @@ install:
 data:
 	rm -rf $(YOLO_DATA)
 
-ifeq ($(notdir $(DATA)),coco2017)
-	python3 src/datasets/coco.py --cls "$(CLS)" --out $(YOLO_DATA)/train --image_folder $(DATA)/images/train2017 --json $(DATA)/annotations/instances_train2017.json
-	python3 src/datasets/coco.py --cls "$(CLS)" --out $(YOLO_DATA)/val --image_folder $(DATA)/images/val2017 --json $(DATA)/annotations/instances_val2017.json
+ifeq ($(notdir $(DATA)),hands_total)
+	python3 src/datasets/coco.py --cls "$(CLS)" --out $(YOLO_DATA)/train --image_folder $(DATA)/images/train --json $(DATA)/annotations/hands_train.json
+	python3 src/datasets/coco.py --cls "$(CLS)" --out $(YOLO_DATA)/val --image_folder $(DATA)/images/test --json $(DATA)/annotations/hands_val.json
 endif
-ifeq ($(notdir $(DATA)),widerface)
-	python3 src/datasets/widerface.py --out $(YOLO_DATA)/train --images $(DATA)/WIDER_train/images --mat $(DATA)/wider_face_split/wider_face_train.mat
-	python3 src/datasets/widerface.py --out $(YOLO_DATA)/val --images $(DATA)/WIDER_val/images --mat $(DATA)/wider_face_split/wider_face_val.mat
-endif
-ifeq ($(notdir $(DATA)),CCPD2019)
-	python3 src/datasets/ccpd2coco.py --input $(DATA)/splits/train.txt --output $(YOLO_DATA)/train.json
-	python3 src/datasets/ccpd2coco.py --input $(DATA)/splits/val.txt --output $(YOLO_DATA)/val.json
-
-	python3 src/datasets/coco.py --cls "$(CLS)" --out $(YOLO_DATA)/train --image_folder $(DATA) --json $(YOLO_DATA)/train.json
-	python3 src/datasets/coco.py --cls "$(CLS)" --skip 50 --out $(YOLO_DATA)/val --image_folder $(DATA) --json $(YOLO_DATA)/val.json
-endif
-
 	ls $(YOLO_DATA)/val/|grep txt| awk '{split($$1,a,"."); printf("%s%s.jpg\n", "'../../$(YOLO_DATA)/val/'", a[1])}' > $(YOLO_DATA)/val.txt
 	ls $(YOLO_DATA)/train/|grep txt| awk '{split($$1,a,"."); printf("%s%s.jpg\n", "'../../$(YOLO_DATA)/train/'", a[1])}' > $(YOLO_DATA)/train.txt
 
@@ -117,8 +105,7 @@ endif
 
 	rm $(RESULTS)/$(VERSION_YOLO)/yolov4.cfg.1
 
-	cd $(RESULTS)/$(VERSION_YOLO) && ../../darknet/build-release/darknet detector train coco.data yolov4.cfg -map $(PRETRAIN)
-	# -dont_show -json_port 8070 -ext_output -mjpeg_port 8090
+	cd $(RESULTS)/$(VERSION_YOLO) && ../../darknet/build-release/darknet detector train coco.data yolov4.cfg -map $(PRETRAIN) -dont_show -json_port 8070 -ext_output -mjpeg_port 8090
 	# yolov4_last.weights
 
 validation:
